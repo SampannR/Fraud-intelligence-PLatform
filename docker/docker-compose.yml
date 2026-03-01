@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: fraud_postgres
+    environment:
+      POSTGRES_USER: fraud_admin
+      POSTGRES_PASSWORD: fraud_pass
+      POSTGRES_DB: fraud_warehouse
+
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: fraud_airflow
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://fraud_admin:fraud_pass@postgres:5432/fraud_warehouse
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+
+    volumes:
+      - ../dags:/opt/airflow/dags
+      - ../pipelines:/opt/airflow/pipelines
+      - ../ml:/opt/airflow/ml
+      - ../data_lake:/opt/airflow/data_lake # ⭐ THIS IS THE KEY FIX
+      - shared-inference:/opt/shared/inference_output
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c " pip install --no-cache-dir joblib scikit-learn pandas && airflow db migrate && airflow users create
+        --username admin
+        --password admin
+        --firstname Admin
+        --lastname User
+        --role Admin
+        --email admin@example.com || true &&
+      airflow webserver & airflow scheduler "
+
+  streamlit:
+    build: ../app
+    container_name: streamlit-app
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../app:/app
+      - ../ml:/opt/airflow/ml
+      - shared-inference:/opt/shared/inference_output
+    depends_on:
+      - postgres
+    restart: always
+
+volumes:
+  postgres_data:
+  shared-inference:

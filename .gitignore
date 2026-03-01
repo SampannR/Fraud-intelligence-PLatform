@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+
+# Airflow
+airflow/logs/
+airflow/.airflowignore
+
+# ML artifacts and outputs
+ml/**/artifacts/
+opt/shared/
+*.csv
+
+# Streamlit
+.streamlit/
+
+# Docker
+*.log
+
+# OS
+.DS_Store

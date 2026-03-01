@@ -1,0 +1,20 @@
+data_lake:
+  features_path: data_lake/features/
+  processed_path: data_lake/processed/
+  raw_path: data_lake/raw/
+database:
+  name: fraud_warehouse.db
+  path: warehouse/
+  type: sqlite
+llm:
+  model: llama3
+  provider: local
+logging:
+  level: INFO
+ml:
+  contamination: 0.02
+  model_type: isolation_forest
+  random_state: 42
+project:
+  environment: local
+  name: AI Financial Risk & Fraud Intelligence Platform
